@@ -1,185 +1,153 @@
 #include<stdio.h>
 #include<string.h>
 #include<math.h>
+#include<stdbool.h>
+struct DFA{
+    int state[100][100];
+    int init_state;
+    int num_states;
+    bool final_states[100];
+    int alphabet_size;
+};
 
-int ninputs;
-int dfa[100][2][100] = {0};
-int state[10000] = {0};
-char ch[10], str[1000];
-int go[10000][2] = {0};
-int arr[10000] = {0};
+struct DFA build_dfa(int nfa[100][100],int init_state,bool final_states[],int alpha_size,int state_nums);
+bool accepts(struct DFA *dfa,char s[]){
+    int  n = strlen(s);
+    int state = dfa->init_state;
+    for(int i=0;i<n;i++){
+        if(state == 0)
+            return false;
+        // printf("%d\n",state);
+        
+        state = dfa->state[state][s[i]-'0'];
+        if(state == 0)
+            return false;
+    }
+        // printf("%d\n",state);
 
-int main(){
-     int st, fin, in;
-     int f[10];
-     int i,j=3,s=0,final=0,flag=0,curr1,curr2,k,l;
-     int c;
-     
-     printf("\nFollow the one based indexing\n");
-     
-     printf("\nEnter the number of states::");
-     scanf("%d",&st);
-     
-     printf("\nGive state numbers from 0 to %d",st-1);
-     
-     for(i=0;i<st;i++)
-     		state[(int)(pow(2,i))] = 1;
-
-     printf("\nEnter number of final states\t");
-     scanf("%d",&fin);
-
-     printf("\nEnter final states::");
-     for(i=0;i<fin;i++)
-     {
-          scanf("%d",&f[i]);
-     }
-
-     int p,q,r,rel;
-     
-     printf("\nEnter the number of rules according to NFA::");
-     scanf("%d",&rel);
-     
-     printf("\n\nDefine transition rule as \"initial state input symbol final state\"\n");
-
-     
-     
-     for(i=0; i<rel; i++)
-     {
-          scanf("%d%d%d",&p,&q,&r);
-		  if (q==0)
-		  	dfa[p][0][r] = 1;
-		  else 
-		  	dfa[p][1][r] = 1;          
-     }
-     
-     printf("\nEnter initial state::");
-     scanf("%d",&in);
-
-     in = pow(2,in);
-
-     i=0;
-     
-     printf("\nSolving according to DFA");
-     
-     int x=0;
-     for(i=0;i<st;i++)
-     {
-     		for(j=0;j<2;j++)
-     		{
-     				int stf=0;
-     				for(k=0;k<st;k++)
-     				{
-     						if(dfa[i][j][k]==1)
-     							stf = stf + pow(2,k);
-     				}
-     				
-     				
-     				go[(int)(pow(2,i))][j] = stf;
-     				printf("%d-%d-->%d\n",(int)(pow(2,i)),j,stf);
-     				if(state[stf]==0)
-     					arr[x++] = stf;		
-     				state[stf] = 1;
-     		}
-     		
-     }
-     
-     
-     //for new states
-     for(i=0;i<x;i++)
-     {
-     		printf("for %d ---- ",arr[x]);
-     		for(j=0;j<2;j++)
-     		{
-     				int new=0;
-     				for(k=0;k<st;k++)
-     				{
-     						if(arr[i] & (1<<k))
-     						{
-     								int h = pow(2,k);
-     								
-     								if(new==0)
-     									new = go[h][j];
-     								new = new | (go[h][j]);
-     								
-     								
-     						}
-     				}
-     				
-     				if(state[new]==0)
-     				{
-     					arr[x++] = new;
-     					state[new] = 1;
-     				}
-     		}
-     }
-     
-     printf("\nThe total number of distinct states are::\n");
-     
-     printf("STATE     0   1\n");
-     
-     for(i=0;i<10000;i++)
-     {
-     		if(state[i]==1)
-     		{
-     				//printf("%d**",i);
-     				int y=0;
-     				if(i==0)
-     					printf("q0 ");
-     				
-     				else
-     				for(j=0;j<st;j++)
-     				{
-     						int x = 1<<j;
-     						if(x&i)
-     						{
-     							printf("q%d ",j);
-     							y = y+pow(2,j);
-     							//printf("y=%d  ",y);
-     						}
-     				}
-     				//printf("%d",y);
-     				printf("       %d   %d",go[y][0],go[y][1]);
-     				printf("\n");
-     		}
-     }
-     
-     
-     
-     j=3;
-     while(j--)
-     {
-     		printf("\nEnter string");
-			scanf("%s",str);
-			l = strlen(str);
-			curr1 = in;
-			flag = 0;
-			printf("\nString takes the following path-->\n");
-			printf("%d-",curr1);
-
-			for(i=0;i<l;i++)
-			{
-				curr1 = go[curr1][str[i]-'0'];
-				printf("%d-",curr1);
-			}
-			
-			printf("\nFinal state - %d\n",curr1);
-			
-			for(i=0;i<fin;i++)
-			{
-					if(curr1 & (1<<f[i]))
-					{
-							flag = 1;
-							break;
-					}
-			}
-			
-			if(flag)
-				printf("\nString Accepted");
-			else
-				printf("\nString Rejected"); 		
-			     		
-	 }
-		 
-	
-	return 0;
+    return dfa->final_states[state];
 }
+int main(){
+    int alphabet_size;
+    printf("Enter number of alphabets: ");
+    scanf("%d",&alphabet_size); // 1
+    int state_nums;
+    printf("Enter number of states: ");
+    scanf("%d",&state_nums); // 2
+    int state[100][100]; // 3
+    for(int i=0;i<state_nums;i++){
+        for(int j = 0;j<alphabet_size;j++)
+            state[i][j] = -1;
+    }
+    printf("Enter number of final states : ");
+    int num_f_states; // 4
+    scanf("%d",&num_f_states);
+    bool final_states[state_nums]; // 5
+    memset(final_states,0,sizeof(final_states));
+    int i;
+    for(i=0;i<num_f_states;i++){
+        int k;
+        scanf("%d",&k);
+        final_states[k] = 1;
+    }
+    int initial_state; //6
+    printf("Enter the initial state for the NFA :");
+    scanf("%d",&initial_state);
+    int transitions; 
+    printf("Enter number of transitions : ");
+    scanf("%d",&transitions);
+    printf("Enter transitions in the form <present_state> <alpahbet_seen> <next_state> :\n");
+    while(transitions--){
+        int current,alpha,next;
+        scanf("%d%d%d",&current,&alpha,&next);
+        state[current][alpha] = next;
+    }
+    struct DFA d = build_dfa(state,initial_state,final_states,alphabet_size,state_nums);
+    struct DFA *dfa = &(d);
+    char s[1000];
+    while(true){
+        printf("Enter String as a string of digits : ");
+        scanf("%s",s);
+        if(accepts(dfa,s))
+            printf("Accepted\n");
+        else
+            printf("Rejected\n");
+    }   
+}
+
+struct DFA build_dfa(int nfa[100][100],int init_state,bool final_states[],int alpha_size,int state_nums){
+    struct DFA dfa;
+    dfa.alphabet_size = alpha_size;
+    memset(dfa.state,0,sizeof(dfa.state));
+    int curr_state = (1<<init_state);
+    
+    dfa.init_state = curr_state;
+    bool state_found[100];
+    memset(state_found,0,sizeof(state_found));
+    memset(dfa.final_states,0,sizeof(dfa.final_states));
+    int i = 0;
+    int final_states_rec = 0;
+    for(i=0;i<state_nums;i++){
+        if(final_states[i]){
+            final_states_rec = (final_states_rec|(1<<i));
+            // printf("%d\n",final_states_rec);
+        }
+    }
+    i = 0;
+    int j = 0;
+    int waiting_states[100];
+    waiting_states[j++] = curr_state;
+    state_found[curr_state] = 1; 
+    
+    int cnt = 0;
+    while(i<j){
+        int curr_state = waiting_states[i++];
+        // printf("%d\n",curr_state);
+        int curr = curr_state;
+        if((final_states_rec & curr_state) != 0){
+            // printf("%d\n",curr_state);
+            dfa.final_states[curr_state] = 1;
+        }
+        int mask = 0;
+        int bit = 0;
+        // printf("%d\n",mask);
+        while(curr>0){
+            if(curr&1){
+                int k;
+                for(k=0;k<alpha_size;k++){
+                    if(nfa[bit][k] != -1){
+                        
+                        dfa.state[curr_state][k] = (dfa.state[curr_state][k]|(1<<nfa[bit][k]));
+                        mask = (mask|(1<<nfa[bit][k]));
+                        if((mask&final_states_rec) !=0)
+                            dfa.final_states[mask] = true;
+                    }
+                }
+            }
+            bit++;
+            curr>>=1;
+        }
+        
+        if(mask == 0)
+            break;
+        if(!state_found[mask]){
+            // printf("%d:%d\n",curr_state,mask);
+            waiting_states[j++] = mask;
+            state_found[mask] = true;
+        }
+    }
+    dfa.num_states = cnt;
+    return dfa;
+}
+
+
+// Test Cases Correct Output are : 
+/*
+	State : 2
+	Alphabets : 2
+	Final State : 1
+	Initial State : 0
+	Transitions : 
+		1. 0 0 1
+		2. 0 1 0
+*/
